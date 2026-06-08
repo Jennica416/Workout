@@ -482,14 +482,14 @@ function dayKey(w,d){return`w${w}_${d}`;}
 function exKey(w,d,s,e){return`ex_w${w}_${d}_s${s}_e${e}`;}
 function totalDaysDone(){return Object.keys(state).filter(k=>k.startsWith('w')&&!k.startsWith('ex_')&&state[k]).length;}
 function totalWeeksDone(){let c=0;for(let w=1;w<=12;w++){if(DAYS.every(d=>state[dayKey(w,d)]))c++;}return c;}
-function weekProgress(w){return{done:DAYS.filter(d=>state[dayKey(w,d)]).length,total:7};}
+function weekProgress(w){return{done:DAYS.filter(d=>state[dayKey(w,d)]).length,total:4};}
 function pillClass(t) {
   return { strength: 'pill-strength', yoga: 'pill-yoga', rest: 'pill-rest' }[t] || 'pill-rest';
 }
 
 // ── RENDER ────────────────────────────────────────────────────
 function updateHeader(){
-  const done=totalDaysDone(),weeks=totalWeeksDone(),pct=Math.round((done/84)*100);
+  const done=totalDaysDone(),weeks=totalWeeksDone(),pct=Math.round((done/48)*100);
   document.getElementById('stat-days').textContent=done;
   document.getElementById('stat-weeks').textContent=weeks;
   document.getElementById('stat-pct').textContent=pct+'%';
