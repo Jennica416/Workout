@@ -480,7 +480,7 @@ let currentPhase=1, currentWeek=1;
 
 function dayKey(w,d){return`w${w}_${d}`;}
 function exKey(w,d,s,e){return`ex_w${w}_${d}_s${s}_e${e}`;}
-function totalDaysDone(){return Object.keys(state).filter(k=>k.startsWith('w')&&!k.startsWith('ex_')&&state[k]).length;}
+function totalDaysDone(){return Object.keys(state).filter(k=>k.startsWith('w')&&!k.startsWith('wt_')&&!k.startsWith('ex_')&&!k.startsWith('act_')&&state[k]).length;}
 function totalWeeksDone(){let c=0;for(let w=1;w<=12;w++){if(DAYS.every(d=>state[dayKey(w,d)]))c++;}return c;}
 function weekProgress(w){return{done:DAYS.filter(d=>state[dayKey(w,d)]).length,total:4};}
 function pillClass(t) {
@@ -502,8 +502,8 @@ function renderWeekList(){
   weeks.forEach(w=>{
     const prog=weekProgress(w);
     let badge='';
-    if(prog.done===7)badge=`<span class="week-done-badge">✓ Done</span>`;
-    else if(prog.done>0)badge=`<span class="week-partial-badge">${prog.done}/7</span>`;
+    if(prog.done===DAYS.length)badge=`<span class="week-done-badge">✓ Done</span>`;
+    else if(prog.done>0)badge=`<span class="week-partial-badge">${prog.done}/${DAYS.length}</span>`;
     html+=`<button class="week-btn ${w===currentWeek?'active':''}" onclick="selectWeek(${w})">Week ${w} ${badge}</button>`;
   });
   document.getElementById('week-list').innerHTML=html;
@@ -516,7 +516,7 @@ function renderContent(){
   let html=`<div class="week-header p${phase}">
     <div class="phase-badge">Phase ${phase} — ${['Foundation','Build','Strengthen'][phase-1]}</div>
     <h2>Week ${week}</h2>
-    <div class="week-progress"><div class="week-progress-dots">${dots}</div><span class="week-progress-text">${prog.done} of 4 days complete</span></div>
+    <div class="week-progress"><div class="week-progress-dots">${dots}</div><span class="week-progress-text">${prog.done} of ${prog.total} days complete</span></div>
   </div>`;
 
   DAYS.forEach(day=>{
