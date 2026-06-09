@@ -538,14 +538,37 @@ function renderContent(){
         const info=EXERCISES[ex.key]||{icon:'●',name:ex.key,desc:'',tips:[]};
         const ek=exKey(week,day,sIdx,eIdx);
         const exDone=!!state[ek];
+
+        const wKey='wt_'+ek;
+        const currentWeight=state[wKey]||'';
+        const history=getWeightHistory(week,day,sIdx,eIdx);
+        const noWeightKeys=['arm-circles','shoulder-rolls','band-pull-aparts','leg-swings',
+          'hip-circles','bw-squats','chest-opener','doorway-stretch','figure-four','quad-stretch',
+          'hip-flexor-stretch','hamstring-stretch','full-stretch','breathwork','dynamic-warmup',
+          'upper-stretch','yoga-cool','diaphragmatic','lunge-hip-flexor','pec-stretch',
+          'thread-needle','90-90-stretch','pigeon-pose','march-in-place','band-activation',
+          'light-band'];
+        const showWeight=wk.type!=='yoga'&&!noWeightKeys.includes(ex.key);
+
         html+=`<div class="exercise-card" id="excard_${ek}">
           <div class="ex-header" onclick="toggleEx('${ek}')">
             <div class="ex-check ${exDone?'checked':''}" onclick="toggleExDone(event,'${ek}')">${exDone?'✓':''}</div>
             <span class="ex-name">${info.name}</span>
             <span class="ex-detail">${ex.detail}</span>
+            ${showWeight?`<div onclick="event.stopPropagation()" style="display:flex;align-items:center;gap:4px;margin-left:8px;">
+              <input type="number" value="${currentWeight}" placeholder="lbs"
+                     onchange="saveWeight('${ek}',this.value)"
+                     style="width:52px;height:28px;border-radius:6px;border:1px solid var(--border);
+                            background:var(--gray-light);font-size:13px;text-align:center;padding:0 4px;
+                            font-family:'DM Sans',sans-serif;color:var(--text);" />
+              <span style="font-size:11px;color:var(--text-hint);">lbs</span>
+            </div>`:''}
             <span class="ex-expand" id="exarrow_${ek}">▼</span>
           </div>
           <div class="ex-body" id="exbody_${ek}">
+            ${history.length>0?`<div style="padding:6px 1rem 0;font-size:11px;color:var(--text-hint);">
+              Previous: ${history.map(h=>`<span style="color:#1D9E75;font-weight:500;">${h}</span>`).join(' · ')}
+            </div>`:''}
             <div class="ex-body-inner">
               <div>
                 <div class="ex-image-area"><div style="font-size:3rem">${info.icon}</div><div class="ex-image-label">${info.name}</div></div>
@@ -563,7 +586,7 @@ function renderContent(){
     </button></div></div>`;
   });
 
-  document.getElementById('content').innerHTML=html;
+  document.getElementById('content').innerHTML=html+buildActivityTracker(week);
 }
 
 function renderAll(){renderWeekList();renderContent();updateHeader();}
