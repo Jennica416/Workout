@@ -601,6 +601,93 @@ function toggleExDone(e,ek){
   updateHeader();
 }
 
+function saveWeight(ek, val) {
+  const wKey = 'wt_' + ek;
+  state[wKey] = val;
+  scheduleSave();
+}
+
+function getWeightHistory(week, day, sIdx, eIdx) {
+  const results = [];
+  for (let w = 1; w < week; w++) {
+    const k = 'wt_' + exKey(w, day, sIdx, eIdx);
+    if (state[k]) results.push('wk' + w + ' ' + state[k] + ' lbs');
+  }
+  return results.slice(-3); // last 3 weeks only
+}
+
+const ACTIVITIES = [
+  { key: 'treadmill', label: 'Treadmill 60+ min' },
+  { key: 'walk',      label: 'Outdoor walk 30+ min' },
+  { key: 'steps',     label: '25k+ steps' },
+  { key: 'bike',      label: 'Bike ride' },
+  { key: 'yoga',      label: 'Yoga' },
+];
+const ACT_DAYS = ['M','T','W','T','F','S','S'];
+
+function actKey(week, actKey, dayIdx) {
+  return `act_w${week}_${actKey}_d${dayIdx}`;
+}
+
+function toggleActivity(week, act, dayIdx) {
+  const k = actKey(week, act, dayIdx);
+  state[k] = !state[k];
+  scheduleSave();
+  const tracker = document.getElementById('activity-tracker');
+  if (tracker) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = buildActivityTracker(week);
+    tracker.replaceWith(tmp.firstChild);
+  }
+}
+
+function buildActivityTracker(week) {
+  const WEEK_DAYS = ['M','T','W','T','F','S','S'];
+  let html = `<div id="activity-tracker" style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-top:1rem;">`;
+  html += `<div style="padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);">
+    <div style="font-weight:600;font-size:14px;color:var(--text);">Extra activity — Week ${week}</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Tap any day to log it</div>
+  </div>`;
+
+  // Day headers
+  html += `<div style="display:flex;align-items:center;padding:6px 1.25rem 4px;border-bottom:1px solid var(--border);">
+    <div style="flex:1;"></div>`;
+  WEEK_DAYS.forEach(d => {
+    html += `<div style="width:32px;text-align:center;font-size:11px;font-weight:600;color:var(--text-hint);">${d}</div>`;
+  });
+  html += `<div style="width:32px;text-align:right;font-size:11px;color:var(--text-hint);">#</div></div>`;
+
+  // Activity rows
+  let totalLogged = 0;
+  ACTIVITIES.forEach(act => {
+    let rowCount = 0;
+    html += `<div style="display:flex;align-items:center;padding:5px 1.25rem;border-bottom:1px solid var(--border);">
+      <div style="flex:1;font-size:13px;color:var(--text);">${act.label}</div>`;
+    for (let d = 0; d < 7; d++) {
+      const k = actKey(week, act.key, d);
+      const done = !!state[k];
+      if (done) { rowCount++; totalLogged++; }
+      html += `<div style="width:32px;display:flex;justify-content:center;">
+        <div onclick="toggleActivity(${week},'${act.key}',${d})"
+             style="width:20px;height:20px;border-radius:50%;border:1.5px solid ${done?'#1D9E75':'var(--border)'};
+                    background:${done?'#1D9E75':'var(--gray-light)'};cursor:pointer;display:flex;
+                    align-items:center;justify-content:center;font-size:10px;color:white;">
+          ${done ? '✓' : ''}
+        </div>
+      </div>`;
+    }
+    html += `<div style="width:32px;text-align:right;font-size:12px;color:var(--text-hint);">${rowCount}</div>`;
+    html += `</div>`;
+  });
+
+  // Footer
+  html += `<div style="padding:8px 1.25rem;display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:12px;color:var(--text-muted);">Total logged: <strong style="color:var(--green)">${totalLogged}</strong></span>
+    <span style="font-size:12px;color:var(--text-hint);">Week ${week} of 12</span>
+  </div></div>`;
+  return html;
+}
+
 function selectPhase(p){
   currentPhase=p;currentWeek=DAY_PHASES[p][0];
   document.querySelectorAll('.phase-btn').forEach((b,i)=>b.classList.toggle('active',i+1===p));
